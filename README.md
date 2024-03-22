@@ -4,6 +4,7 @@ By [Zidu Wang](https://scholar.google.com/citations?user=7zD5f0IAAAAJ&hl=zh-CN&o
 This repository is the official implementation of [3DDFA_V3](https://arxiv.org/abs/2312.00311) in CVPR2024.
 
 ## Citation
+If you use our work in your research, please cite our publication:
 ```
 @article{wang20233d,
   title={3D Face Reconstruction with the Geometric Guidance of Facial Part Segmentation},
