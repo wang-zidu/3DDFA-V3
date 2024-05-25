@@ -79,7 +79,7 @@ This repository is the official implementation of [3DDFA_V3](https://arxiv.org/a
     <br>![teaser](/examples/teaser/result2.png)<br>
 
 ## 3D Mesh Part Masks
-Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/blob/master/assets/) to download our masks (annotations).
+Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/blob/main/assets/) to download our masks (annotations).
 
 ![teaser](/examples/teaser/annotation.jpg)
 
