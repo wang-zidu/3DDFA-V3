@@ -1,0 +1,17 @@
+# Important: PIL and OpenCV should use the same version of libjpeg, see https://stackoverflow.com/questions/51084602/conversion-from-opencv-to-pil-is-not-accurate
+Pillow==10.3.0
+opencv-python==4.9.0.80
+
+torch-summary
+scipy
+scikit-image
+
+# for retinaface face box detector
+albumentations
+
+# for mtcnn face box detector (optional)
+tensorflow
+mtcnn
+
+Ninja
+
