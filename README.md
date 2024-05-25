@@ -34,7 +34,7 @@ This repository is the official implementation of [3DDFA_V3](https://arxiv.org/a
   ```  
 
 ### Usage
-1. Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/blob/master/assets/README.md) to prepare assets and pretrained models.
+1. Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/blob/main/assets/) to prepare assets and pretrained models.
 
 2. Run demos.
 
@@ -79,14 +79,14 @@ This repository is the official implementation of [3DDFA_V3](https://arxiv.org/a
     <br>![teaser](/examples/teaser/result2.png)<br>
 
 ## 3D Mesh Part Masks
-Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/blob/master/assets/README.md) to download our masks (annotations).
+Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/blob/master/assets/) to download our masks (annotations).
 
 ![teaser](/examples/teaser/annotation.jpg)
 
 We provide a new 3D mesh part masks aligned with the semantic regions in 2D face segmentation. The current version is based on [BFM](https://faces.dmi.unibas.ch/bfm/main.php?nav=1-0&id=basel_face_model) (with 35,709 vertices), which shares the same topology as the face models used by [Deep3D](https://github.com/sicxu/Deep3DFaceRecon_pytorch), [MGCNet](https://github.com/jiaxiangshang/MGCNet), [HRN](https://github.com/youngLBW/HRN), etc. We also provide some other useful attributes.
 
 ## Synthetic Expression Data
-Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/blob/master/data/README.md) to download data.
+Please refer to this [README](https://github.com/wang-zidu/3DDFA-V3/tree/main/data) to download data.
 
 ![teaser](/examples/teaser/data.png)
 
