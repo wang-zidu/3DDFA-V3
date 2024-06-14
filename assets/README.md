@@ -9,6 +9,7 @@ assets
 ├── face_model.npy              # (face model)
 ├── large_base_net.pth
 ├── net_recon.pth               # (backbone)
+├── net_recon_mbnet.pth         # (MobileNet-V3 backbone, optional)
 ├── retinaface_resnet50_2020-07-20_old_torch.pth
 ├── similarity_Lm3D_all.mat
 ├── indices_38365_35709.npy     # (optional)
