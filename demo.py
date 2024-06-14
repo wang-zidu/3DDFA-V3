@@ -70,4 +70,8 @@ if __name__ == '__main__':
     parser.add_argument('--extractTex', default=True, type=lambda x: x.lower() in ['true', '1'],
                         help='save obj use texture extracted from input image')
 
+    # backbone
+    parser.add_argument('--backbone', default='resnet50', type=str,
+                        help='backbone for reconstruction, support for resnet50 and mbnetv3')
+
     main(parser.parse_args())
