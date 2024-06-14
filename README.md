@@ -2,7 +2,7 @@
 
 By [Zidu Wang](https://scholar.google.com/citations?user=7zD5f0IAAAAJ&hl=zh-CN&oi=ao), [Xiangyu Zhu](https://xiangyuzhu-open.github.io/homepage/), [Tianshuo Zhang](tianshuo.zhang@nlpr.ia.ac.cn), [Baiqin Wang](wangbaiqin2024@ia.ac.cn) and [Zhen Lei](http://www.cbsr.ia.ac.cn/users/zlei/).
 
-This repository is the official implementation of [3DDFA_V3](https://arxiv.org/abs/2312.00311) in [CVPR2024 (Highlight)](https://cvpr.thecvf.com/Conferences/2024/AcceptedPapers).
+This repository is the official implementation of [3DDFA_V3](https://arxiv.org/abs/2312.00311) in [CVPR2024 (Highlight)](https://cvpr.thecvf.com/virtual/2024/awards_detail).
 
 ![teaser](/examples/teaser/teaser.jpg)
 
