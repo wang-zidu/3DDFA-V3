@@ -136,12 +136,21 @@ class face_model:
                     rasterize_fov=2 * np.arctan(112. / 1015) * 180 / np.pi, znear=5., zfar=15., rasterize_size=int(2 * 112.)
         )
 
-        self.net_recon = networks.define_net_recon(
-            net_recon='resnet50', use_last_fc=False, init_path=None
-        )
-        self.net_recon.load_state_dict(torch.load("assets/net_recon.pth")['net_recon'])
-        self.net_recon = self.net_recon.to(self.device)
-        self.net_recon.eval()
+        if args.backbone == 'resnet50':
+            self.net_recon = networks.define_net_recon(
+                net_recon='resnet50', use_last_fc=False, init_path=None
+            )
+            self.net_recon.load_state_dict(torch.load("assets/net_recon.pth")['net_recon'])
+            self.net_recon = self.net_recon.to(self.device)
+            self.net_recon.eval()
+
+        if args.backbone == 'mbnetv3':
+            self.net_recon = networks.define_net_recon_mobilenetv3(
+                net_recon='recon_mobilenetv3_large', use_last_fc=False, init_path=None
+            )
+            self.net_recon.load_state_dict(torch.load("assets/net_recon_mbnet.pth")['net_recon'])
+            self.net_recon = self.net_recon.to(self.device)
+            self.net_recon.eval()
 
         self.input_img = None
 
