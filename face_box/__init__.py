@@ -17,9 +17,9 @@ def no_crop(im):
         exit()
 
 class retinaface:
-    def __init__(self):
+    def __init__(self, device):
         # retinaface uses cuda
-        self.landmark_model = LargeModelInfer("assets/large_base_net.pth", device='cuda')
+        self.landmark_model = LargeModelInfer("assets/large_base_net.pth", device=device)
         self.lm3d_std = load_lm3d()
 
     def detector(self, im):
@@ -99,7 +99,7 @@ class face_box:
                 self.detector = m.detector
                 print('use mtcnn for face box')
             elif args.detector == 'retinaface':
-                r = retinaface()
+                r = retinaface(args.device)
                 self.detector = r.detector
                 print('use retinaface for face box')
             else:
