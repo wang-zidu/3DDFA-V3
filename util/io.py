@@ -6,7 +6,7 @@ import torch
 import numpy as np
 from PIL import Image
 # from .preprocess import back_resize_crop_img
-from .nv_diffrast import MeshRenderer
+# from .nv_diffrast import MeshRenderer
 
 def plot_kpts(image, kpts, color = 'g'):
 
