@@ -10,6 +10,7 @@ This repository is the official implementation of [3DDFA_V3](https://arxiv.org/a
 
 ## News
 
+* [08/01/2024] We provide a fast CPU renderer based on [face3d](https://github.com/yfeng95/face3d). It is capable of performing rendering inference functions similar to nvdiffrast.
 * [06/14/2024] We provide a fast version based on [MobileNet-V3](https://arxiv.org/abs/1905.02244), which achieves similar results to the ResNet-50 version at a higher speed. Please note that if your environment supports ResNet-50, we still strongly recommend using the ResNet-50 version. (The MobileNet-V3 version is still under testing, and we may update it further in the future.)
 
 ## Getting Started
@@ -25,6 +26,7 @@ This repository is the official implementation of [3DDFA_V3](https://arxiv.org/a
   # The pytorch version is not strictly required.
   pip install torch==1.12.1+cu102 torchvision==0.13.1+cu102 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu102
   # or: conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=10.2 -c pytorch
+  # On Windows 10, it has been verified that version 1.10 works. You can install it with the following command: pip install torch==1.10.0+cu102 torchvision==0.11.0+cu102 torchaudio==0.10.0 -f https://download.pytorch.org/whl/torch_stable.html
 
   pip install -r requirements.txt
 
@@ -33,6 +35,14 @@ This repository is the official implementation of [3DDFA_V3](https://arxiv.org/a
   git clone https://github.com/NVlabs/nvdiffrast.git
   cd nvdiffrast
   pip install .
+  cd ..
+
+  # In some scenarios, nvdiffrast may not be usable. Therefore, we additionally provide a fast CPU renderer based on face3d.
+  # The results produced by the two renderers may have slight differences, but we consider these differences to be negligible.
+  # Please note that we still highly recommend using nvdiffrast.
+  cd util/cython_renderer/
+  python setup.py build_ext -i
+  cd ..
   cd ..
   ```  
 
