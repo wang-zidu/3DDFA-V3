@@ -111,11 +111,12 @@ Based on [MaskGan](https://github.com/switchablenorms/CelebAMask-HQ/tree/master)
 ## Citation
 If you use our work in your research, please cite our publication:
 ```
-@article{wang20233d,
+@inproceedings{wang20243d,
   title={3D Face Reconstruction with the Geometric Guidance of Facial Part Segmentation},
   author={Wang, Zidu and Zhu, Xiangyu and Zhang, Tianshuo and Wang, Baiqin and Lei, Zhen},
-  journal={arXiv preprint arXiv:2312.00311},
-  year={2023}
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={1672--1682},
+  year={2024}
 }
 ```
 
