@@ -3,7 +3,7 @@ import torch
 import os
 import cv2
 import torch.nn.functional as F
-from util.nv_diffrast import MeshRenderer, MeshRenderer_UV
+# from util.nv_diffrast import MeshRenderer, MeshRenderer_UV
 import argparse
 from . import networks
 
@@ -94,9 +94,17 @@ class face_model:
         if args.extractTex:
             uv_coords_numpy = process_uv(model['uv_coords'].copy(), 1024, 1024)
             self.uv_coords_torch = (torch.tensor(uv_coords_numpy, requires_grad=False, dtype=torch.float32, device=self.device) / 1023 - 0.5) * 2
-            self.uv_renderer = MeshRenderer_UV(
-                    rasterize_size=int(1024.)
-            )
+            if self.device == 'cpu':
+                from util.cpu_renderer import MeshRenderer_UV_cpu
+                self.uv_renderer = MeshRenderer_UV_cpu(
+                        rasterize_size=int(1024.)
+                )
+                self.uv_coords_torch = self.uv_coords_torch + 1e-6 # For CPU renderer, a slight perturbation may be needed to avoid certain rendering artifacts. Users can comment out 1e-6 to compare different texture effects.
+            else:
+                from util.nv_diffrast import MeshRenderer_UV
+                self.uv_renderer = MeshRenderer_UV(
+                        rasterize_size=int(1024.)
+                )
             self.uv_coords_numpy = uv_coords_numpy.copy()
             self.uv_coords_numpy[:,1] = 1024 - self.uv_coords_numpy[:,1] - 1
 
@@ -132,15 +140,22 @@ class face_model:
         self.init_lit = torch.tensor([0.8, 0, 0, 0, 0, 0, 0, 0, 0], requires_grad=False, dtype=torch.float32, device=self.device).reshape([1, 1, -1])
         self.SH_a = torch.tensor([np.pi, 2 * np.pi / np.sqrt(3.), 2 * np.pi / np.sqrt(8.)], requires_grad=False, dtype=torch.float32, device=self.device)
         self.SH_c = torch.tensor([1/np.sqrt(4 * np.pi), np.sqrt(3.) / np.sqrt(4 * np.pi), 3 * np.sqrt(5.) / np.sqrt(12 * np.pi)], requires_grad=False, dtype=torch.float32, device=self.device)
-        self.renderer = MeshRenderer(
-                    rasterize_fov=2 * np.arctan(112. / 1015) * 180 / np.pi, znear=5., zfar=15., rasterize_size=int(2 * 112.)
-        )
+        if self.device == 'cpu':
+            from util.cpu_renderer import MeshRenderer_cpu
+            self.renderer = MeshRenderer_cpu(
+                        rasterize_fov=2 * np.arctan(112. / 1015) * 180 / np.pi, znear=5., zfar=15., rasterize_size=int(2 * 112.)
+            )
+        else:
+            from util.nv_diffrast import MeshRenderer
+            self.renderer = MeshRenderer(
+                        rasterize_fov=2 * np.arctan(112. / 1015) * 180 / np.pi, znear=5., zfar=15., rasterize_size=int(2 * 112.)
+            )
 
         if args.backbone == 'resnet50':
             self.net_recon = networks.define_net_recon(
                 net_recon='resnet50', use_last_fc=False, init_path=None
             )
-            self.net_recon.load_state_dict(torch.load("assets/net_recon.pth")['net_recon'])
+            self.net_recon.load_state_dict(torch.load("assets/net_recon.pth", map_location=torch.device('cpu'))['net_recon'])
             self.net_recon = self.net_recon.to(self.device)
             self.net_recon.eval()
 
@@ -148,7 +163,7 @@ class face_model:
             self.net_recon = networks.define_net_recon_mobilenetv3(
                 net_recon='recon_mobilenetv3_large', use_last_fc=False, init_path=None
             )
-            self.net_recon.load_state_dict(torch.load("assets/net_recon_mbnet.pth")['net_recon'])
+            self.net_recon.load_state_dict(torch.load("assets/net_recon_mbnet.pth", map_location=torch.device('cpu'))['net_recon'])
             self.net_recon = self.net_recon.to(self.device)
             self.net_recon.eval()
 
@@ -421,7 +436,7 @@ class face_model:
 
         seg = torch.zeros(224,224,8).to(v3d.device)
         for i in range(8):
-            mask, _, _, _ = self.renderer(v3d, self.annotation_tri[i])
+            mask, _, _, _ = self.renderer(v3d.clone(), self.annotation_tri[i])
             seg[:,:,i] = mask.squeeze()
         return seg
 
@@ -432,7 +447,7 @@ class face_model:
             temp = torch.zeros_like(v3d)
             temp[:,self.annotation[i],:] = 1
             temp[:,visible_idx == 0,:] = 0
-            _, _, temp_image, _ = self.renderer(v3d, self.tri, temp)
+            _, _, temp_image, _ = self.renderer(v3d.clone(), self.tri, temp.clone())
             temp_image = temp_image.mean(axis=1)
             mask = torch.where(temp_image >= 0.5, torch.tensor(1.0).to(v3d.device), torch.tensor(0.0).to(v3d.device))
             seg[:,:,i] = mask.squeeze()
@@ -460,11 +475,11 @@ class face_model:
         face_texture = self.compute_texture(face_albedo, face_norm_roted, alpha_dict['sh'])
 
         # render shape with texture
-        _, _, pred_image, visible_idx_renderer = self.renderer(v3d, self.tri, torch.clamp(face_texture, 0, 1), visible_vertice = True)
+        _, _, pred_image, visible_idx_renderer = self.renderer(v3d.clone(), self.tri, torch.clamp(face_texture, 0, 1).clone(), visible_vertice = True)
 
         # render shape
         gray_shading = self.compute_gray_shading_with_directionlight(torch.ones_like(face_albedo)*0.78,face_norm_roted)
-        mask, _, pred_image_shape, _ = self.renderer(v3d, self.tri, gray_shading)
+        mask, _, pred_image_shape, _ = self.renderer(v3d.clone(), self.tri, gray_shading.clone())
 
         result_dict = {
             'v3d': v3d.detach().cpu().numpy(),
@@ -517,10 +532,10 @@ class face_model:
 
         # use median-filtered-weight pca-texture for texture blending at invisible region, todo: poisson blending should give better-looking results
         if self.args.extractTex:
-            _, _, uv_color_pca, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0), self.tri, torch.clamp(face_texture, 0, 1))
+            _, _, uv_color_pca, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0).clone(), self.tri, (torch.clamp(face_texture, 0, 1)).clone())
             img_colors = bilinear_interpolate(self.input_img.permute(0, 2, 3, 1).detach()[0], v2d[0, :, 0].detach(), 223 - v2d[0, :, 1].detach())
-            _, _, uv_color_img, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0), self.tri, img_colors.unsqueeze(0))
-            _, _, uv_weight, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0), self.tri, 1 - torch.stack((visible_idx,)*3, axis=-1).unsqueeze(0).type(torch.float32).to(self.tri.device))
+            _, _, uv_color_img, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0).clone(), self.tri, img_colors.unsqueeze(0).clone())
+            _, _, uv_weight, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0).clone(), self.tri, (1 - torch.stack((visible_idx,)*3, axis=-1).unsqueeze(0).type(torch.float32).to(self.tri.device)).clone())
 
             median_filtered_w = cv2.medianBlur((uv_weight.detach().cpu().permute(0, 2, 3, 1).numpy()[0]*255).astype(np.uint8), 31)/255.
 
