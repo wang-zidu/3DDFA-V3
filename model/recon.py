@@ -453,7 +453,7 @@ class face_model:
             seg[:,:,i] = mask.squeeze()
         return seg
 
-    def forward(self):
+    def forward(self, no_pca = False):
         assert self.net_recon.training == False
         alpha = self.net_recon(self.input_img)
 
@@ -530,20 +530,28 @@ class face_model:
             seg_visible = self.segmentation_visible(v3d, visible_idx)
             result_dict['seg_visible'] = seg_visible.detach().cpu().numpy()
 
-        # use median-filtered-weight pca-texture for texture blending at invisible region, todo: poisson blending should give better-looking results
+        # use median-filtered-weight pca-texture for texture blending at invisible region, todo: poisson blending should give better-looking results √ 2024-11-11
         if self.args.extractTex:
             _, _, uv_color_pca, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0).clone(), self.tri, (torch.clamp(face_texture, 0, 1)).clone())
             img_colors = bilinear_interpolate(self.input_img.permute(0, 2, 3, 1).detach()[0], v2d[0, :, 0].detach(), 223 - v2d[0, :, 1].detach())
             _, _, uv_color_img, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0).clone(), self.tri, img_colors.unsqueeze(0).clone())
             _, _, uv_weight, _ = self.uv_renderer(self.uv_coords_torch.unsqueeze(0).clone(), self.tri, (1 - torch.stack((visible_idx,)*3, axis=-1).unsqueeze(0).type(torch.float32).to(self.tri.device)).clone())
 
-            median_filtered_w = cv2.medianBlur((uv_weight.detach().cpu().permute(0, 2, 3, 1).numpy()[0]*255).astype(np.uint8), 31)/255.
+            # median_filtered_w = cv2.medianBlur((uv_weight.detach().cpu().permute(0, 2, 3, 1).numpy()[0]*255).astype(np.uint8), 31)/255.
 
             uv_color_pca = uv_color_pca.detach().cpu().permute(0, 2, 3, 1).numpy()[0]
             uv_color_img = uv_color_img.detach().cpu().permute(0, 2, 3, 1).numpy()[0]
 
-            res_colors = ((1 - median_filtered_w) * np.clip(uv_color_img, 0, 1) + median_filtered_w * np.clip(uv_color_pca, 0, 1))
+            # res_colors = ((1 - median_filtered_w) * np.clip(uv_color_img, 0, 1) + median_filtered_w * np.clip(uv_color_pca, 0, 1))
             # result_dict['extractTex_uv'] = res_colors
+            
+            if no_pca:
+                # use fliped img-texture for texture blending
+                res_colors = cv2.seamlessClone((uv_color_img*255).astype(np.uint8), cv2.flip((uv_color_img*255).astype(np.uint8), 1), ((1 - uv_weight.detach().cpu().permute(0, 2, 3, 1).numpy()[0])*255)[:,:,0].astype(np.uint8), (512, 512), cv2.NORMAL_CLONE) / 255.
+            else:
+                # use pca-texture for texture blending
+                res_colors = cv2.seamlessClone((uv_color_img*255).astype(np.uint8), (uv_color_pca*255).astype(np.uint8), ((1 - uv_weight.detach().cpu().permute(0, 2, 3, 1).numpy()[0])*255)[:,:,0].astype(np.uint8), (512, 512), cv2.NORMAL_CLONE) / 255.
+        
             v_colors = get_colors_from_uv(res_colors.copy(), self.uv_coords_numpy.copy())
             result_dict['extractTex'] = v_colors
 
